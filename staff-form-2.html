@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>3B Float & Sitter Log – Staff Submission</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006d77;--teal-light:#83c5be;--teal-pale:#edf6f9;--teal-mid:#d4ecf0;--accent:#e29578;--text:#1a2e35;--text-mid:#456068;--text-light:#7a9aa2;--white:#ffffff;--bg:#f4f9fb;--border:#c8dfe5;--success:#2d9e6e;--radius-lg:16px;--radius-md:12px;--radius-sm:8px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
+.form-header{background:var(--teal);padding:24px 20px 28px;position:relative;overflow:hidden;}
+.form-header::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.07);}
+.header-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
+.header-tag .dot{width:6px;height:6px;border-radius:50%;background:#83c5be;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.header-title{font-family:'Nunito',sans-serif;font-size:26px;font-weight:800;color:white;line-height:1.15;margin-bottom:6px;position:relative;z-index:1;}
+.header-sub{font-size:13px;color:rgba(255,255,255,0.72);position:relative;z-index:1;}
+.sync-status{font-size:11px;margin-top:8px;position:relative;z-index:1;}
+.progress-wrap{background:white;padding:14px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.progress-steps{display:flex;align-items:center;margin-bottom:10px;}
+.step-node{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
+.step-node:not(:last-child)::after{content:'';position:absolute;top:14px;left:50%;right:-50%;height:2px;background:var(--border);z-index:0;}
+.step-node.done:not(:last-child)::after{background:var(--teal-light);}
+.step-circle{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-light);position:relative;z-index:1;transition:all 0.3s;}
+.step-node.active .step-circle{border-color:var(--teal);background:var(--teal);color:white;box-shadow:0 0 0 4px rgba(0,109,119,0.15);}
+.step-node.done .step-circle{border-color:var(--teal-light);background:var(--teal-light);color:white;}
+.step-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-light);margin-top:4px;}
+.step-node.active .step-label{color:var(--teal);}
+.progress-bar-track{height:4px;background:var(--teal-mid);border-radius:4px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:var(--teal);border-radius:4px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);}
+.form-body{padding:16px 16px 0;}
+.section-card{background:white;border-radius:var(--radius-lg);box-shadow:0 2px 16px rgba(0,109,119,0.10);margin-bottom:14px;overflow:hidden;border:1px solid var(--border);display:none;animation:slideUp 0.3s ease;}
+.section-card.active{display:block;}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.section-head{background:var(--teal-pale);border-bottom:1px solid var(--teal-mid);padding:14px 18px;display:flex;align-items:center;gap:10px;}
+.section-icon{width:34px;height:34px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.section-title{font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:var(--teal);}
+.section-desc{font-size:12px;color:var(--text-light);margin-top:1px;}
+.section-body{padding:18px;}
+.field-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-mid);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.field-label .req{color:var(--accent);}
+.field-wrap{margin-bottom:18px;}
+.field-wrap:last-child{margin-bottom:0;}
+input[type=date],input[type=text]{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Nunito Sans',sans-serif;font-size:15px;color:var(--text);background:white;outline:none;transition:border-color 0.2s;-webkit-appearance:none;}
+input[type=date]:focus,input[type=text]:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,109,119,0.12);}
+.pill-grid{display:grid;gap:8px;}
+.pill-grid.cols-2{grid-template-columns:1fr 1fr;}
+.pill-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.pill{position:relative;cursor:pointer;}
+.pill input[type=radio],.pill input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;}
+.pill-body{display:flex;align-items:center;gap:8px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);transition:all 0.18s;user-select:none;min-height:48px;}
+.pill-body .pill-icon{font-size:18px;flex-shrink:0;}
+.pill-body .pill-text{font-size:13px;font-weight:600;color:var(--text-mid);line-height:1.2;}
+.pill-body .pill-sub{font-size:10px;color:var(--text-light);display:block;margin-top:1px;}
+.pill input:checked+.pill-body{border-color:var(--teal);background:var(--teal-pale);box-shadow:0 0 0 2px rgba(0,109,119,0.12);}
+.pill input:checked+.pill-body .pill-text{color:var(--teal);}
+.pill.danger input:checked+.pill-body{border-color:#e63946;background:#fff5f5;}
+.pill.danger input:checked+.pill-body .pill-text{color:#e63946;}
+.pill.amber input:checked+.pill-body{border-color:#e29578;background:#fff8f5;}
+.pill.amber input:checked+.pill-body .pill-text{color:#c0673a;}
+.search-wrap{position:relative;}
+.search-input-wrap{position:relative;}
+.search-input-wrap .search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text-light);pointer-events:none;}
+.search-input-wrap input{padding-left:40px;}
+.search-selected{display:none;align-items:center;justify-content:space-between;background:var(--teal-pale);border:1.5px solid var(--teal);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;}
+.search-selected.show{display:flex;}
+.selected-name{font-size:15px;font-weight:700;color:var(--teal);}
+.selected-role{font-size:11px;color:var(--teal-light);margin-top:2px;}
+.clear-selection{background:none;border:none;font-size:20px;color:var(--text-light);cursor:pointer;padding:4px;line-height:1;}
+.staff-list-wrap{border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;max-height:260px;overflow-y:auto;background:white;display:none;}
+.staff-list-wrap.open{display:block;}
+.staff-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--teal-mid);cursor:pointer;transition:background 0.12s;}
+.staff-item:last-child{border-bottom:none;}
+.staff-item:active{background:var(--teal-pale);}
+.staff-item-name{font-size:14px;font-weight:600;color:var(--text);}
+.staff-item-role{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--teal-mid);color:var(--teal);text-transform:uppercase;letter-spacing:0.06em;}
+textarea{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Nunito Sans',sans-serif;font-size:14px;color:var(--text);background:white;outline:none;resize:none;min-height:90px;transition:border-color 0.2s;}
+textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,109,119,0.12);}
+.form-nav{padding:12px 16px 0;display:flex;gap:10px;}
+.btn-back{flex:0 0 auto;padding:15px 20px;border-radius:var(--radius-md);border:1.5px solid var(--border);background:white;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:var(--text-mid);cursor:pointer;display:flex;align-items:center;gap:6px;}
+.btn-next{flex:1;padding:15px 20px;border-radius:var(--radius-md);border:none;background:var(--teal);font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(0,109,119,0.25);transition:all 0.15s;}
+.btn-next:active{background:#005a63;transform:scale(0.98);}
+.btn-submit{background:var(--success);box-shadow:0 4px 12px rgba(45,158,110,0.35);}
+.review-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--teal-mid);gap:12px;}
+.review-row:last-child{border-bottom:none;}
+.review-key{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-light);flex:0 0 110px;}
+.review-val{font-size:14px;font-weight:600;color:var(--text);text-align:right;flex:1;}
+.success-screen{display:none;text-align:center;padding:48px 24px;animation:fadeIn 0.5s ease;}
+.success-screen.show{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.success-circle{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-light));display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 20px;box-shadow:0 8px 30px rgba(0,109,119,0.3);}
+.success-title{font-family:'Nunito',sans-serif;font-size:24px;font-weight:800;color:var(--teal);margin-bottom:8px;}
+.success-sub{font-size:14px;color:var(--text-light);margin-bottom:28px;line-height:1.5;}
+.success-detail{background:white;border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px 20px;text-align:left;margin-bottom:20px;box-shadow:0 2px 16px rgba(0,109,119,0.10);}
+.btn-new{width:100%;padding:15px;border-radius:var(--radius-md);border:1.5px solid var(--teal);background:white;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:var(--teal);cursor:pointer;}
+.btn-new:active{background:var(--teal-pale);}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.shake{animation:shake 0.35s ease;}
+.field-error{border-color:#e63946!important;box-shadow:0 0 0 3px rgba(230,57,70,0.12)!important;}
+.error-msg{font-size:11px;color:#e63946;font-weight:600;margin-top:5px;display:none;}
+.error-msg.show{display:block;}
+</style>
+</head>
+<body>
+
+<div class="form-header">
+  <div class="header-tag"><span class="dot"></span> 3B Tele Med Surg · Staff Submission</div>
+  <div class="header-title">Float &amp; Sitter Log</div>
+  <div class="header-sub">Complete all sections to submit your assignment record</div>
+  <div class="sync-status" id="syncStatus" style="color:rgba(255,255,255,0.6);font-size:11px;margin-top:8px;">☁️ Connecting...</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="step-node active" id="step-node-1"><div class="step-circle">1</div><div class="step-label">Details</div></div>
+    <div class="step-node" id="step-node-2"><div class="step-circle">2</div><div class="step-label">Staff</div></div>
+    <div class="step-node" id="step-node-3"><div class="step-circle">3</div><div class="step-label">Assignment</div></div>
+    <div class="step-node" id="step-node-4"><div class="step-circle">4</div><div class="step-label">Review</div></div>
+  </div>
+  <div class="progress-bar-track"><div class="progress-bar-fill" id="progressBar" style="width:25%"></div></div>
+</div>
+
+<div class="form-body" id="formBody">
+  <!-- STEP 1 -->
+  <div class="section-card active" id="sec-1">
+    <div class="section-head"><div class="section-icon">📋</div><div><div class="section-title">Entry Details</div><div class="section-desc">Date, shift, and role</div></div></div>
+    <div class="section-body">
+      <div class="field-wrap">
+        <div class="field-label">Date <span class="req">*</span></div>
+        <input type="date" id="fDate">
+        <div class="error-msg" id="err-date">Please select a date</div>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Shift <span class="req">*</span></div>
+        <div class="pill-grid cols-3">
+          <label class="pill"><input type="radio" name="shift" value="Day"><div class="pill-body"><span class="pill-icon">☀️</span><div><span class="pill-text">Day</span></div></div></label>
+          <label class="pill"><input type="radio" name="shift" value="Eve"><div class="pill-body"><span class="pill-icon">🌆</span><div><span class="pill-text">Eve</span></div></div></label>
+          <label class="pill"><input type="radio" name="shift" value="Night"><div class="pill-body"><span class="pill-icon">🌙</span><div><span class="pill-text">Night</span></div></div></label>
+        </div>
+        <div class="error-msg" id="err-shift">Please select a shift</div>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Role <span class="req">*</span></div>
+        <div class="pill-grid cols-3">
+          <label class="pill"><input type="radio" name="role" value="RN" onchange="filterByRole()"><div class="pill-body"><span class="pill-icon">🩺</span><div><span class="pill-text">RN</span></div></div></label>
+          <label class="pill"><input type="radio" name="role" value="LPN" onchange="filterByRole()"><div class="pill-body"><span class="pill-icon">💊</span><div><span class="pill-text">LPN</span></div></div></label>
+          <label class="pill"><input type="radio" name="role" value="CA" onchange="filterByRole()"><div class="pill-body"><span class="pill-icon">🤝</span><div><span class="pill-text">CA</span></div></div></label>
+        </div>
+        <div class="error-msg" id="err-role">Please select a role</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="section-card" id="sec-2">
+    <div class="section-head"><div class="section-icon">👤</div><div><div class="section-title">Staff Member</div><div class="section-desc">Search and select your name</div></div></div>
+    <div class="section-body">
+      <div class="field-wrap">
+        <div class="field-label">Your Name <span class="req">*</span></div>
+        <div class="search-selected" id="selectedDisplay">
+          <div><div class="selected-name" id="selectedName">—</div><div class="selected-role" id="selectedRole">—</div></div>
+          <button class="clear-selection" onclick="clearSelection()">✕</button>
+        </div>
+        <div class="search-wrap" id="searchWrap">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="staffSearchInput" placeholder="Search by last name…" oninput="filterStaff()" onfocus="openList()" autocomplete="off" inputmode="text" autocorrect="off" spellcheck="false">
+          </div>
+          <div class="staff-list-wrap" id="staffListWrap"><div id="staffListInner"></div></div>
+        </div>
+        <div class="error-msg" id="err-staff">Please select your name</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="section-card" id="sec-3">
+    <div class="section-head"><div class="section-icon">📌</div><div><div class="section-title">Assignment &amp; Event</div><div class="section-desc">Type, unit, and payout</div></div></div>
+    <div class="section-body">
+      <div class="field-wrap">
+        <div class="field-label">Assignment Type <span class="req">*</span></div>
+        <div class="pill-grid cols-2">
+          <label class="pill"><input type="radio" name="assign" value="Float"><div class="pill-body"><span class="pill-icon">🔄</span><div><span class="pill-text">Float</span><span class="pill-sub">Sent to another unit</span></div></div></label>
+          <label class="pill"><input type="radio" name="assign" value="Sitter"><div class="pill-body"><span class="pill-icon">👁</span><div><span class="pill-text">Sitter</span><span class="pill-sub">1:1 observation</span></div></div></label>
+          <label class="pill danger"><input type="radio" name="assign" value="Call Off"><div class="pill-body"><span class="pill-icon">📵</span><div><span class="pill-text">Call Off</span><span class="pill-sub">Absent this shift</span></div></div></label>
+          <label class="pill danger"><input type="radio" name="assign" value="Mandation"><div class="pill-body"><span class="pill-icon">⚠️</span><div><span class="pill-text">Mandation</span><span class="pill-sub">Mandatory hold</span></div></div></label>
+          <label class="pill danger"><input type="radio" name="assign" value="Refused Mandation"><div class="pill-body"><span class="pill-icon">🚫</span><div><span class="pill-text">Refused</span><span class="pill-sub">Declined mandate</span></div></div></label>
+          <label class="pill amber"><input type="radio" name="assign" value="LPN to CA"><div class="pill-body"><span class="pill-icon">↔️</span><div><span class="pill-text">LPN → CA</span><span class="pill-sub">Role change mid-shift</span></div></div></label>
+          <label class="pill amber"><input type="radio" name="assign" value="CA to LPN"><div class="pill-body"><span class="pill-icon">↔️</span><div><span class="pill-text">CA → LPN</span><span class="pill-sub">Role change mid-shift</span></div></div></label>
+          <label class="pill"><input type="radio" name="assign" value="LPN to Sitter"><div class="pill-body"><span class="pill-icon">↔️</span><div><span class="pill-text">LPN → Sitter</span><span class="pill-sub">Role change mid-shift</span></div></div></label>
+          <label class="pill"><input type="radio" name="assign" value="Sitter to LPN"><div class="pill-body"><span class="pill-icon">↔️</span><div><span class="pill-text">Sitter → LPN</span><span class="pill-sub">Role change mid-shift</span></div></div></label>
+          <label class="pill"><input type="radio" name="assign" value="Sitter to CA"><div class="pill-body"><span class="pill-icon">↔️</span><div><span class="pill-text">Sitter → CA</span><span class="pill-sub">Role change mid-shift</span></div></div></label>
+          <label class="pill"><input type="radio" name="assign" value="CA to Sitter"><div class="pill-body"><span class="pill-icon">↔️</span><div><span class="pill-text">CA → Sitter</span><span class="pill-sub">Role change mid-shift</span></div></div></label>
+        </div>
+        <div class="error-msg" id="err-assign">Please select an assignment type</div>
+      </div>
+      <div class="field-wrap" id="unitWrap">
+        <div class="field-label">Distribution Unit <span style="color:var(--text-light);text-transform:none;letter-spacing:0;font-weight:500;">(if floating/sitter)</span></div>
+        <div class="pill-grid cols-3">
+          <label class="pill"><input type="radio" name="unit" value="3B/3C"><div class="pill-body"><span class="pill-text">3B/3C</span></div></label>
+          <label class="pill"><input type="radio" name="unit" value="4B"><div class="pill-body"><span class="pill-text">4B</span></div></label>
+          <label class="pill"><input type="radio" name="unit" value="4D"><div class="pill-body"><span class="pill-text">4D</span></div></label>
+          <label class="pill"><input type="radio" name="unit" value="5D"><div class="pill-body"><span class="pill-text">5D</span></div></label>
+          <label class="pill"><input type="radio" name="unit" value="ICU"><div class="pill-body"><span class="pill-text">ICU</span></div></label>
+          <label class="pill"><input type="radio" name="unit" value="ED"><div class="pill-body"><span class="pill-text">ED</span></div></label>
+        </div>
+      </div>
+
+      <!-- Multiple floats / job changes in one shift -->
+      <div class="field-wrap">
+        <div class="field-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Additional Assignments This Shift <span style="color:var(--text-light);text-transform:none;letter-spacing:0;font-weight:500;">(optional)</span></span>
+          <button type="button" onclick="addExtraAssignment()" style="background:rgba(0,109,119,0.12);border:1px solid rgba(0,109,119,0.3);border-radius:6px;padding:4px 10px;color:var(--teal);font-size:11px;font-weight:700;cursor:pointer;">+ Add</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">Use if you floated to multiple units or had a role/job change mid-shift</div>
+        <div id="extraAssignments"></div>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Payout</div>
+        <div class="pill-grid cols-2">
+          <label class="pill"><input type="checkbox" name="payout" value="Charge"><div class="pill-body"><span class="pill-icon">🏷</span><div><span class="pill-text">Charge</span></div></div></label>
+          <label class="pill"><input type="checkbox" name="payout" value="High Pay"><div class="pill-body"><span class="pill-icon">💰</span><div><span class="pill-text">High Pay</span></div></div></label>
+          <label class="pill"><input type="checkbox" name="payout" value="Incentive Bonus"><div class="pill-body"><span class="pill-icon">⭐</span><div><span class="pill-text">Incentive Bonus</span></div></div></label>
+          <label class="pill"><input type="checkbox" name="payout" value="Bereavement"><div class="pill-body"><span class="pill-icon">🕊</span><div><span class="pill-text">Bereavement</span></div></div></label>
+        </div>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Notes / Context</div>
+        <textarea id="fNotes" placeholder="Add any relevant context…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="section-card" id="sec-4">
+    <div class="section-head"><div class="section-icon">✅</div><div><div class="section-title">Review &amp; Submit</div><div class="section-desc">Confirm everything looks correct</div></div></div>
+    <div class="section-body" id="reviewBody"></div>
+  </div>
+</div>
+
+<div class="success-screen" id="successScreen">
+  <div class="success-circle">✓</div>
+  <div class="success-title">Entry Submitted!</div>
+  <div class="success-sub">Your record has been saved to the cloud.<br>The charge nurse board will update automatically.</div>
+  <div class="success-detail" id="successDetail"></div>
+  <button class="btn-new" onclick="resetForm()">+ Submit Another Entry</button>
+</div>
+
+<div class="form-nav" id="formNav">
+  <button class="btn-back" id="btnBack" onclick="goBack()" style="display:none;">← Back</button>
+  <button class="btn-next" id="btnNext" onclick="goNext()">Next →</button>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  SUPABASE — hardcoded credentials, zero localStorage
+// ════════════════════════════════════════════════════════════════
+const UNITS = ['3B/3C','4B','4D','5D','ICU','ED'];
+const ASSIGN_TYPES = ['Float','Sitter','Call Off','Mandation','Refused Mandation','LPN to CA','CA to LPN','LPN to Sitter','Sitter to LPN','Sitter to CA','CA to Sitter'];
+
+let extraCount = 0;
+
+function addExtraAssignment() {
+  extraCount++;
+  const id = `extra_${extraCount}`;
+  const wrap = document.getElementById('extraAssignments');
+  const div = document.createElement('div');
+  div.id = id;
+  div.style.cssText = 'background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;position:relative;';
+  div.innerHTML = `
+    <button type="button" onclick="document.getElementById('${id}').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:18px;color:var(--text-light);cursor:pointer;line-height:1;">✕</button>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-mid);margin-bottom:10px;">Assignment #${extraCount + 1}</div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-mid);margin-bottom:6px;">Type</div>
+      <select name="extraType_${extraCount}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;color:var(--text);background:white;outline:none;">
+        <option value="">— select type —</option>
+        ${ASSIGN_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--text-mid);margin-bottom:6px;">Unit (if applicable)</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+        ${UNITS.map(u => `
+          <label style="cursor:pointer;">
+            <input type="radio" name="extraUnit_${extraCount}" value="${u}" style="display:none;">
+            <div class="extra-unit-pill" onclick="selectExtraUnit(this)" style="padding:10px;border:1.5px solid var(--border);border-radius:8px;text-align:center;font-size:13px;font-weight:600;color:var(--text-mid);background:var(--bg);transition:all 0.15s;cursor:pointer;">${u}</div>
+          </label>`).join('')}
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+}
+
+function selectExtraUnit(el) {
+  // Unselect siblings
+  el.closest('div[id^="extra_"]').querySelectorAll('.extra-unit-pill').forEach(p => {
+    p.style.borderColor = 'var(--border)';
+    p.style.background  = 'var(--bg)';
+    p.style.color       = 'var(--text-mid)';
+    p.previousElementSibling && (p.previousElementSibling.checked = false);
+  });
+  // Select this one
+  el.style.borderColor = 'var(--teal)';
+  el.style.background  = 'var(--teal-pale)';
+  el.style.color       = 'var(--teal)';
+  const radio = el.parentElement.querySelector('input[type=radio]');
+  if (radio) radio.checked = true;
+}
+
+function collectExtraAssignments() {
+  const extras = [];
+  document.querySelectorAll('#extraAssignments > div[id^="extra_"]').forEach(div => {
+    const num = div.id.replace('extra_','');
+    const type = div.querySelector(`select[name="extraType_${num}"]`)?.value;
+    const unitRadio = div.querySelector(`input[name="extraUnit_${num}"]:checked`);
+    if (type) extras.push({ assign: type, unit: unitRadio?.value || '' });
+  });
+  return extras;
+}
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhuc2R2ZGZjZWZsbWFnZmhweWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MTk1NjgsImV4cCI6MjA5NDk5NTU2OH0.UzKZQj4BLxPpH_OCwQR8LyDUeP9YlKn5UtXRFUFaYKA';
+const SB_HEADERS = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+
+async function sbGet(key) {
+  const r = await fetch(`${SB_URL}/rest/v1/tracker_state?key=eq.${key}&select=value`, { headers: SB_HEADERS });
+  if (!r.ok) return null;
+  const rows = await r.json();
+  return rows?.[0]?.value ? JSON.parse(rows[0].value) : null;
+}
+
+async function sbSet(key, value) {
+  return fetch(`${SB_URL}/rest/v1/tracker_state`, {
+    method: 'POST',
+    headers: { ...SB_HEADERS, Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ key, value: JSON.stringify(value), updated_at: new Date().toISOString(), updated_by: 'staff-form' })
+  });
+}
+
+function syncStatus(msg, color) {
+  const el = document.getElementById('syncStatus');
+  if (el) { el.textContent = msg; el.style.color = color || 'rgba(255,255,255,0.7)'; }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ROSTER — pulled from Supabase, falls back to hardcoded
+// ════════════════════════════════════════════════════════════════
+const BASE_STAFF = [
+  {name:"Arnold, Carly E",job:"CA"},{name:"Banks, Breonica N",job:"CA"},{name:"Bantin, Trinity H",job:"CA"},
+  {name:"Barnhart, Adriana C",job:"CA"},{name:"Christiansen, Deanna M",job:"CA"},{name:"Cook, Mark",job:"CA"},
+  {name:"Delacruz, Alysson",job:"CA"},{name:"Donohoe, Nicola",job:"CA"},{name:"Fitzgerald, Kimberly A",job:"CA"},
+  {name:"Handsom, Jenifer",job:"CA"},{name:"Hoff, Lorraine",job:"CA"},{name:"Holmes, Elizabeth N",job:"CA"},
+  {name:"Hunter, Tyree",job:"CA"},{name:"Kathan, Jenna L",job:"CA"},{name:"King, Lakya",job:"CA"},
+  {name:"King, Travonne J",job:"CA"},{name:"Mansour, Ryma N",job:"CA"},{name:"Morton, Madison A",job:"CA"},
+  {name:"Mosher, Cassie L",job:"CA"},{name:"Pierce, Wesley J",job:"CA"},{name:"Porter, Alannah R",job:"CA"},
+  {name:"Riedl, Sarah E",job:"CA"},{name:"Satterlee, Morgan M",job:"CA"},{name:"Schilling, Saria M",job:"CA"},
+  {name:"Batario, John Richard Craig",job:"CA"},
+  {name:"Gray, Catima",job:"CA"},
+  {name:"Stoyle, Carmella",job:"CA"},{name:"VanAlstine, Alexa M",job:"CA"},
+  {name:"Fox, Laura S",job:"LPN"},{name:"Kelly, Lindsey N",job:"LPN"},
+  {name:"Shafer, Wayne A",job:"LPN"},{name:"Stebbins, Danielle L",job:"LPN"},
+  {name:"Alexander, Jessica L",job:"RN"},{name:"Barringer, Heather",job:"RN"},
+  {name:"Burkhart, Danielle M",job:"RN"},{name:"Cannon, Kelly",job:"RN"},
+  {name:"Caswell, Kaleigh",job:"RN"},{name:"Chaves Garcia, Tabata",job:"RN"},
+  {name:"Cole, Curtiss K",job:"RN"},{name:"Condame, Robin E",job:"RN"},
+  {name:"Dean, Kelly L",job:"RN"},{name:"Dibble, Martha",job:"RN"},
+  {name:"Fombe, Rose",job:"RN"},{name:"Goree, Kadian O",job:"RN"},
+  {name:"Hanyon, Sean",job:"RN"},{name:"Hatala, Carrie A",job:"RN"},
+  {name:"Hunsinger, Jennifer J",job:"RN"},{name:"Johnson, Alyssa",job:"RN"},
+  {name:"Jones, Samantha F",job:"RN"},{name:"Kitching, Jill",job:"RN"},
+  {name:"Knight, Robin V",job:"RN"},{name:"Muller, Laurel A",job:"RN"},
+  {name:"Murphy, Stephanie",job:"RN"},{name:"Quinlan, Meghan M",job:"RN"},
+  {name:"Robenson, Jean-Pierre",job:"RN"},{name:"Robinson, Miranda J",job:"RN"},
+  {name:"San Li, Jin",job:"RN"},{name:"Thomas, Jamie",job:"RN"},
+  {name:"Tye, Amber M",job:"RN"},{name:"Walker, Katie L",job:"RN"},
+  {name:"Comiso, Deejay",job:"RN"},
+  {name:"Diederich, Sherry L",job:"RN"},
+  {name:"Hopkins, Sharon",job:"RN"},
+  {name:"Irwin, Riley",job:"RN"},
+  {name:"Kratzberg, Jade A",job:"RN"},
+  {name:"Lee, Olajumoke M",job:"RN"},
+  {name:"Wingler, Matthew",job:"RN"},
+];
+
+let ROSTER = BASE_STAFF.map(s => ({name:s.name, role:s.job})).sort((a,b)=>a.name.localeCompare(b.name));
+let filteredRoster = [...ROSTER];
+let currentStep = 1;
+const TOTAL_STEPS = 4;
+let selectedStaff = null;
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('fDate').value = todayISO();
+  renderStaffList(ROSTER);
+  document.addEventListener('click', e => { if (!e.target.closest('#searchWrap')) closeList(); });
+
+  // Pull live roster from Supabase (Command Center is source of truth)
+  try {
+    syncStatus('☁️ Loading roster...', 'rgba(255,255,255,0.6)');
+    const roster = await sbGet('float_roster');
+    if (roster?.length) {
+      ROSTER = roster
+        .filter(s => s.status !== 'inactive' && !['Ron Higley','Ronald Higley'].includes(s.name))
+        .map(s => ({name: s.name, role: s.role || s.job}))
+        .sort((a,b) => a.name.localeCompare(b.name));
+      filteredRoster = [...ROSTER];
+      renderStaffList(ROSTER);
+      syncStatus(`☁️ Connected · ${ROSTER.length} staff`, '#83c5be');
+    } else {
+      // float_roster not in Supabase yet — use hardcoded BASE_STAFF
+      syncStatus('☁️ Using default roster', 'rgba(255,200,100,0.8)');
+    }
+  } catch(e) {
+    syncStatus('☁️ Offline — using cached roster', 'rgba(255,165,0,0.8)');
+  }
+});
+
+// ── Navigation ────────────────────────────────────────────────
+function goNext() {
+  if (!validateStep(currentStep)) return;
+  if (currentStep === 3) buildReview();
+  if (currentStep < TOTAL_STEPS) { currentStep++; showStep(currentStep); }
+  else submitForm();
+}
+function goBack() { if (currentStep > 1) { currentStep--; showStep(currentStep); } }
+
+function showStep(step) {
+  document.querySelectorAll('.section-card').forEach((c,i) => c.classList.toggle('active', i+1===step));
+  document.querySelectorAll('.step-node').forEach((n,i) => {
+    n.classList.remove('active','done');
+    if (i+1 < step) n.classList.add('done');
+    if (i+1 === step) n.classList.add('active');
+    n.querySelector('.step-circle').textContent = i+1 < step ? '✓' : i+1;
+  });
+  document.getElementById('progressBar').style.width = (step/TOTAL_STEPS*100)+'%';
+  document.getElementById('btnBack').style.display = step > 1 ? 'flex' : 'none';
+  document.getElementById('btnNext').textContent = step === TOTAL_STEPS ? '✓ Submit Entry' : 'Next →';
+  document.getElementById('btnNext').className = 'btn-next' + (step === TOTAL_STEPS ? ' btn-submit' : '');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ── Validation ────────────────────────────────────────────────
+function validateStep(step) {
+  let ok = true;
+  const shake = id => { const el=document.getElementById(id); if(el){el.classList.add('shake');setTimeout(()=>el.classList.remove('shake'),400);} };
+  if (step===1) {
+    const date=document.getElementById('fDate').value;
+    const shift=document.querySelector('input[name=shift]:checked');
+    const role=document.querySelector('input[name=role]:checked');
+    if(!date){showErr('err-date',true);shake('sec-1');ok=false;}else hideErr('err-date');
+    if(!shift){showErr('err-shift',true);shake('sec-1');ok=false;}else hideErr('err-shift');
+    if(!role){showErr('err-role',true);shake('sec-1');ok=false;}else hideErr('err-role');
+  }
+  if (step===2) { if(!selectedStaff){showErr('err-staff',true);shake('sec-2');ok=false;}else hideErr('err-staff'); }
+  if (step===3) { const a=document.querySelector('input[name=assign]:checked'); if(!a){showErr('err-assign',true);shake('sec-3');ok=false;}else hideErr('err-assign'); }
+  return ok;
+}
+function showErr(id,show){const el=document.getElementById(id);if(el)el.classList.toggle('show',show);}
+function hideErr(id){showErr(id,false);}
+
+// ── Staff search ──────────────────────────────────────────────
+function filterByRole() {
+  const role=document.querySelector('input[name=role]:checked')?.value||'';
+  filteredRoster = role ? ROSTER.filter(s=>s.role===role) : [...ROSTER];
+  renderStaffList(filteredRoster); clearSelection();
+}
+function filterStaff() {
+  const q=document.getElementById('staffSearchInput').value.toLowerCase();
+  const role=document.querySelector('input[name=role]:checked')?.value||'';
+  const filtered=ROSTER.filter(s=>s.name.toLowerCase().includes(q)&&(!role||s.role===role));
+  renderStaffList(filtered); openList();
+}
+function renderStaffList(list) {
+  const inner=document.getElementById('staffListInner');
+  if(!list.length){inner.innerHTML='<div class="staff-item"><span class="staff-item-name" style="color:#aaa">No matches</span></div>';return;}
+  inner.innerHTML=list.map(s=>`<div class="staff-item" onclick="selectStaff('${s.name.replace(/'/g,"\\'")}','${s.role}')"><span class="staff-item-name">${s.name}</span><span class="staff-item-role">${s.role}</span></div>`).join('');
+}
+function openList(){document.getElementById('staffListWrap').classList.add('open');}
+function closeList(){document.getElementById('staffListWrap').classList.remove('open');}
+function selectStaff(name,role){
+  selectedStaff={name,role};
+  document.getElementById('selectedName').textContent=name;
+  document.getElementById('selectedRole').textContent=role+' · 3B Tele Med Surg';
+  document.getElementById('selectedDisplay').classList.add('show');
+  document.getElementById('searchWrap').style.display='none';
+  closeList(); hideErr('err-staff');
+}
+function clearSelection(){
+  selectedStaff=null;
+  document.getElementById('selectedDisplay').classList.remove('show');
+  document.getElementById('searchWrap').style.display='block';
+  document.getElementById('staffSearchInput').value='';
+  renderStaffList(filteredRoster);
+}
+
+// ── Review ────────────────────────────────────────────────────
+function buildReview() {
+  const date=document.getElementById('fDate').value;
+  const shift=document.querySelector('input[name=shift]:checked')?.value||'—';
+  const assign=document.querySelector('input[name=assign]:checked')?.value||'—';
+  const unit=document.querySelector('input[name=unit]:checked')?.value||'—';
+  const payout=[...document.querySelectorAll('input[name=payout]:checked')].map(c=>c.value);
+  const notes=document.getElementById('fNotes').value.trim();
+  const extras = collectExtraAssignments();
+  const rows=[['Date',formatDate(date)],['Shift',shift],['Role',selectedStaff?.role||'—'],
+    ['Staff Name',selectedStaff?.name||'—'],['Assignment',assign],['Unit',unit],
+    ['Payout',payout.length?payout.join(', '):'—'],['Notes',notes||'—'],
+    ...(extras.length ? [['Additional Assignments', extras.map(e=>`${e.assign}${e.unit?' → '+e.unit:''}`).join(' · ')]] : [])
+  ];
+  document.getElementById('reviewBody').innerHTML=rows.map(([k,v])=>`<div class="review-row"><span class="review-key">${k}</span><span class="review-val">${v}</span></div>`).join('');
+}
+
+// ── Submit — writes directly to Supabase ─────────────────────
+async function submitForm() {
+  const entry = {
+    id: Date.now(),
+    date: document.getElementById('fDate').value,
+    shift: document.querySelector('input[name=shift]:checked')?.value||'',
+    role: selectedStaff?.role||'',
+    staff: selectedStaff?.name||'',
+    assign: document.querySelector('input[name=assign]:checked')?.value||'',
+    unit: document.querySelector('input[name=unit]:checked')?.value||'',
+    payout: [...document.querySelectorAll('input[name=payout]:checked')].map(c=>c.value),
+    notes: document.getElementById('fNotes').value.trim(),
+    extraAssignments: collectExtraAssignments(),
+    timestamp: new Date().toISOString(),
+  };
+
+  let cloudSaved = false;
+  syncStatus('☁️ Saving...', 'rgba(255,255,255,0.7)');
+
+  try {
+    // 1. Read current history from Supabase
+    const existing = await sbGet('float_history') || [];
+
+    // 2. Prepend new entry (deduplicate)
+    const dedup = new Set(existing.map(e=>`${e.date}|${e.staff}|${e.assign}`));
+    const key = `${entry.date}|${entry.staff}|${entry.assign}`;
+    if (!dedup.has(key)) existing.unshift(entry);
+
+    // 3. Write history back
+    await sbSet('float_history', existing);
+
+    // Update float_board dates in Supabase
+    const board = await sbGet('float_board') || {};
+    const fieldMap = {Float:'float',Sitter:'sitter','Call Off':'calloff',Mandation:'mandation','Refused Mandation':'refusal','LPN in CS':'lpnca'};
+    const field = fieldMap[entry.assign];
+    if (field && entry.role) {
+      const rk = entry.role.toLowerCase();
+      if (!board[rk]) board[rk] = [];
+
+      // Find person — try exact match first, then case-insensitive
+      let idx = board[rk].findIndex(r => r.name === entry.staff);
+      if (idx < 0) idx = board[rk].findIndex(r => r.name.toLowerCase() === entry.staff.toLowerCase());
+      if (idx < 0) {
+        // Not in board yet — add them with all date fields blank
+        board[rk].push({ name: entry.staff, float:'', sitter:'', calloff:'', mandation:'', refusal:'', lpnca:'' });
+        idx = board[rk].length - 1;
+      }
+
+      const [y,m,d] = entry.date.split('-');
+      const fmtDate = `${+m}/${+d}/${y}`;
+      board[rk][idx][field] = fmtDate;
+      board[rk][idx].name = entry.staff; // ensure name is correct case
+
+      // Add to updates panel
+      const updateKey = rk + 'Updates';
+      if (!board[updateKey]) board[updateKey] = [];
+      const typeMap = {float:'Float',sitter:'Sitter',calloff:'Call Off',mandation:'Mandation',refusal:'Refusal',lpnca:'LPN to CA'};
+      const n = new Date();
+      board[updateKey].unshift({
+        name: entry.staff,
+        type: typeMap[field] || field,
+        time: `${n.getMonth()+1}/${n.getDate()}/${String(n.getFullYear()).slice(2)} ${n.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`
+      });
+      if (board[updateKey].length > 8) board[updateKey] = board[updateKey].slice(0, 8);
+      board.lastUpdated = formatNow();
+      await sbSet('float_board', board);
+    }
+
+    cloudSaved = true;
+    syncStatus('☁️ Saved', '#83c5be');
+  } catch(e) {
+    console.warn('Supabase write failed:', e);
+    syncStatus('⚠ Save failed — check connection', 'orange');
+  }
+
+  showSuccess(entry, cloudSaved);
+}
+
+function showSuccess(entry, cloudSaved) {
+  document.getElementById('formBody').style.display='none';
+  document.getElementById('formNav').style.display='none';
+  document.getElementById('progressBar').style.width='100%';
+  document.getElementById('successScreen').classList.add('show');
+  const syncNote = cloudSaved
+    ? '<div style="font-size:11px;color:#2d9e6e;margin-top:8px;font-weight:700;">☁️ Saved to cloud — board updates within 10 seconds</div>'
+    : '<div style="font-size:11px;color:#e29578;margin-top:8px;">⚠ Could not reach cloud — please retry</div>';
+  document.getElementById('successDetail').innerHTML=`
+    <div class="review-row"><span class="review-key">Staff</span><span class="review-val">${entry.staff}</span></div>
+    <div class="review-row"><span class="review-key">Type</span><span class="review-val">${entry.assign}</span></div>
+    <div class="review-row"><span class="review-key">Shift</span><span class="review-val">${entry.shift} · ${formatDate(entry.date)}</span></div>
+    ${entry.unit?`<div class="review-row"><span class="review-key">Unit</span><span class="review-val">${entry.unit}</span></div>`:''}
+    ${syncNote}`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetForm() {
+  currentStep=1; selectedStaff=null;
+  document.getElementById('formBody').style.display='block';
+  document.getElementById('formNav').style.display='flex';
+  document.getElementById('successScreen').classList.remove('show');
+  document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+  document.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=false);
+  document.getElementById('fDate').value=todayISO();
+  document.getElementById('fNotes').value='';
+  document.getElementById('staffSearchInput').value='';
+  document.getElementById('extraAssignments').innerHTML='';
+  extraCount = 0;
+  clearSelection(); filteredRoster=[...ROSTER]; renderStaffList(ROSTER); showStep(1);
+}
+
+function todayISO(){return new Date().toISOString().split('T')[0];}
+function formatDate(d){if(!d)return'—';const[y,m,day]=d.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return`${mo[+m-1]} ${+day}, ${y}`;}
+function formatNow(){const n=new Date();return`${n.getMonth()+1}/${n.getDate()}/${n.getFullYear()} ${n.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;}
+</script>
+</body>
+</html>
